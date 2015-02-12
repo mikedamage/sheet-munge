@@ -3,6 +3,7 @@
 by Mike Green and Tanya Comella
 
 ## Setup
+
 ```
-todo
+sudo apt-get install libcommons-io-java libapache-poi-java
 ```
