@@ -6,9 +6,9 @@
         <jar destfile="/home/mike/workspace/SheetMunge/build/SheetMunge.jar">
             <manifest>
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
-                <attribute name="Rsrc-Main-Class" value="Tester"/>
+                <attribute name="Rsrc-Main-Class" value="org.thoughtcrime.SheetMunge"/>
                 <attribute name="Class-Path" value="."/>
-                <attribute name="Rsrc-Class-Path" value="./ log4j-1.2.jar commons-logging.jar poi-3.10.jar poi.jar xmlbeans.jar poi-ooxml-schemas.jar dom4j.jar poi-ooxml.jar poi-scratchpad.jar commons-io.jar"/>
+                <attribute name="Rsrc-Class-Path" value="./ log4j-1.2.jar commons-logging.jar poi-3.10.jar poi.jar xmlbeans.jar poi-ooxml-schemas.jar dom4j.jar poi-ooxml.jar poi-scratchpad.jar commons-io.jar commons-cli.jar"/>
             </manifest>
             <zipfileset src="jar-in-jar-loader.zip"/>
             <fileset dir="/home/mike/workspace/SheetMunge/bin"/>
@@ -22,6 +22,7 @@
             <zipfileset dir="/usr/share/java" includes="poi-ooxml.jar"/>
             <zipfileset dir="/usr/share/java" includes="poi-scratchpad.jar"/>
             <zipfileset dir="/usr/share/java" includes="commons-io.jar"/>
+            <zipfileset dir="/usr/share/java" includes="commons-cli.jar"/>
         </jar>
     </target>
 </project>
