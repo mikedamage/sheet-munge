@@ -1,11 +1,20 @@
-import java.io.FileInputStream;
-import org.apache.poi.*;
+
+import org.thoughtcrime.Utility;
 
 public class Tester {
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		System.out.println("Hello");
+		if (args.length == 0) {
+			showUsage();
+			return;
+		}
+		
+		Utility util = new Utility(args[0]);
+		
+		util.printFiles();
 	}
 
+	public static void showUsage() {
+		System.out.println("Usage: java -cp . Tester DIRECTORY");
+	}
 }
