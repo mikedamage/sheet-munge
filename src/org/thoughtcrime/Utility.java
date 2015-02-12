@@ -41,7 +41,7 @@ public class Utility {
 	
 	public void parse() {
 		CommandLineParser parser = new BasicParser();
-		CommandLine cmd = null;
+		CommandLine cmd          = null;
 		
 		try {
 			cmd = parser.parse(options, rawArgs);
