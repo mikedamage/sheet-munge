@@ -26,10 +26,10 @@ public class Utility {
 	private String[] exts              = { "xls" };
 	private File root;
 	private Iterator rootIterator;
-	
+
 	public Utility(String[] args) {
 		this.rawArgs = args;
-		
+
 		options.addOption("h", "help", false, "Show usage info");
 		options.addOption("n", "dry-run", false, "Just print which files would be processed");
 		options.addOption("d", "directory", true, "The directory to process");
@@ -38,7 +38,7 @@ public class Utility {
 		options.addOption("y", "height", true, "Image height");
 		// image needs to be 70px tall
 	}
-	
+
 	public void parse() {
 		CommandLineParser parser = new BasicParser();
 		CommandLine cmd          = null;
@@ -50,23 +50,18 @@ public class Utility {
 				help();
 				System.exit(0);
 			}
-			
-			if (cmd.hasOption("n")) {
-				if (!cmd.hasOption("d")) {
-					logger.log(Level.SEVERE, "Missing directory argument");
-					System.exit(1);
-				}
-				
-				root = new File(cmd.getOptionValue("d"));
-				Iterator fileIterator = FileUtils.iterateFiles(root, exts, true);
-				
-				while (fileIterator.hasNext()) {
-					File currentFile = (File) fileIterator.next();
-					logger.info("Found spreadsheet: " + currentFile.getAbsolutePath());
-				}
-				
+
+			if (cmd.hasOption("d")) {
+				boolean dryRun = cmd.hasOption("n");
+				root           = new File(cmd.getOptionValue("d")).getAbsoluteFile();
+				rootIterator   = FileUtils.iterateFiles(root, exts, true);
+
+				processFiles(dryRun);
 				System.exit(0);
 			}
+			
+			logger.severe("Missing required option -d. Please specify a directory to process.");
+			System.exit(1);
 		} catch (ParseException e) {
 			logger.log(Level.SEVERE, "Failed to parse command line arguments", e);
 			help();
@@ -78,6 +73,39 @@ public class Utility {
 		System.out.println("SheetMunge - Replace images in a directory of Excel spreadsheets\n");
 		formatter.printHelp("java -jar SheetMunge.jar OPTIONS", options);
 		System.exit(0);
+	}
+
+	private void processFiles(boolean dryRun) {
+		while (rootIterator.hasNext()) {
+			File currentFile     = (File) rootIterator.next();
+			String absPath       = currentFile.getAbsolutePath();
+			boolean readable     = currentFile.canRead();
+			File mungedFile      = makeMungedFile(currentFile);
+			String mungedPath    = mungedFile.getAbsolutePath();
+			boolean mungedExists = mungedFile.isFile();
+
+			logger.info("Found spreadsheet: " + absPath);
+			logger.info("Munged filename: " + mungedFile.getAbsolutePath());
+
+			if (mungedExists) {
+				logger.info("Munged file already exists. Will overwrite.");
+			}
+
+			if (dryRun) {
+				continue;
+			}
+		}
+	}
+
+	private File makeMungedFile(File file) {
+		File parentFolder   = file.getParentFile();
+		String fileName     = file.getName();
+		int extensionIdx    = fileName.lastIndexOf(".xls");
+		String strippedName = fileName.substring(0, extensionIdx);
+		String mungedName   = strippedName + ".munged.xls";
+		File mungedFile     = new File(parentFolder, mungedName);
+
+		return mungedFile;
 	}
 }
 
