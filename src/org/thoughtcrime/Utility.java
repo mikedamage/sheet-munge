@@ -1,7 +1,13 @@
 package org.thoughtcrime;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.BasicConfigurator;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -14,28 +20,38 @@ import org.apache.commons.cli.ParseException;
 import java.util.Iterator;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
-import org.apache.poi.*;
+import org.apache.poi.hssf.usermodel.*;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 public class Utility {
 
-	private static final Logger logger = Logger.getLogger(Utility.class.getName());
+	private static final Logger logger = LogManager.getLogger(Utility.class.getName());
 	private String[] rawArgs           = null;
 	private Options options            = new Options();
 	private String[] exts              = { "xls" };
+	private String fileSuffix          = ".updated";
 	private File root;
 	private Iterator rootIterator;
+	private byte[] newPicture;
 
 	public Utility(String[] args) {
 		this.rawArgs = args;
+		
+		// Setup logging
+		BasicConfigurator.configure();
 
 		options.addOption("h", "help", false, "Show usage info");
 		options.addOption("n", "dry-run", false, "Just print which files would be processed");
 		options.addOption("d", "directory", true, "The directory to process");
 		options.addOption("i", "image", true, "The image to insert");
-		options.addOption("x", "width", true, "Image width");
-		options.addOption("y", "height", true, "Image height");
+		//options.addOption("x", "width", true, "Image width");
+		//options.addOption("y", "height", true, "Image height");
+		options.addOption("s", "suffix", true, "Updated filename suffix");
 		// image needs to be 70px tall
 	}
 
@@ -51,7 +67,29 @@ public class Utility {
 				System.exit(0);
 			}
 
+			if (cmd.hasOption("s")) {
+				fileSuffix = cmd.getOptionValue("s");
+			}
+
 			if (cmd.hasOption("d")) {
+				if (!cmd.hasOption("i")) {
+					logger.fatal("Missing required -i argument");
+					System.exit(1);
+				}
+				
+				File newPictureFile = new File(cmd.getOptionValue("i")).getAbsoluteFile();
+				
+				try {
+					FileInputStream newPictureIn = new FileInputStream(newPictureFile);
+					newPicture = IOUtils.toByteArray(newPictureIn);
+				} catch (FileNotFoundException e) {
+					logger.fatal("New picture file not found!");
+					System.exit(1);
+				} catch (IOException e) {
+					logger.fatal("Error loading new picture file!");
+					System.exit(1);
+				}
+				
 				boolean dryRun = cmd.hasOption("n");
 				root           = new File(cmd.getOptionValue("d")).getAbsoluteFile();
 				rootIterator   = FileUtils.iterateFiles(root, exts, true);
@@ -60,10 +98,10 @@ public class Utility {
 				System.exit(0);
 			}
 			
-			logger.severe("Missing required option -d. Please specify a directory to process.");
+			logger.fatal("Missing required option -d. Please specify a directory to process.");
 			System.exit(1);
 		} catch (ParseException e) {
-			logger.log(Level.SEVERE, "Failed to parse command line arguments", e);
+			logger.fatal("Failed to parse command line arguments!");
 			help();
 		}
 	}
@@ -84,16 +122,58 @@ public class Utility {
 			String mungedPath    = mungedFile.getAbsolutePath();
 			boolean mungedExists = mungedFile.isFile();
 
-			logger.info("Found spreadsheet: " + absPath);
-			logger.info("Munged filename: " + mungedFile.getAbsolutePath());
+			logger.debug("Found spreadsheet: " + absPath);
+			logger.info("Converting spreadsheet: " + absPath);
+			logger.debug("Munged filename: " + mungedPath);
 
 			if (mungedExists) {
 				logger.info("Munged file already exists. Will overwrite.");
 			}
-
-			if (dryRun) {
+			
+			if (!readable) {
+				logger.warn(absPath + " is not readable. Skipping.");
 				continue;
 			}
+			
+			logger.debug("Opening HSSF workbook");
+			try {
+				FileInputStream inStream     = new FileInputStream(currentFile);
+				HSSFWorkbook currentWorkbook = new HSSFWorkbook(inStream);
+				HSSFSheet templateSheet      = currentWorkbook.getSheet("template");
+				
+				if (templateSheet == null) {
+					logger.warn("Could not find Template sheet in workbook. Skipping.");
+					continue;
+				}
+				
+				logger.debug("Found Template sheet in workbook");
+				
+				HSSFPatriarch drawingPatriarch = templateSheet.getDrawingPatriarch();
+				List allChildren               = drawingPatriarch.getChildren();
+				int numDrawings                = allChildren.size();
+				logger.debug("Found " + String.valueOf(numDrawings) + " drawings");
+				
+				if (numDrawings > 0) {
+					logger.info("Removing first image from worksheet");
+					HSSFShape shape = (HSSFShape) allChildren.get(0);
+					drawingPatriarch.removeShape(shape);
+				}
+				
+				if (!dryRun) {
+					FileOutputStream outStream = new FileOutputStream(mungedFile);
+					logger.info("Saving new workbook to " + mungedPath);
+					currentWorkbook.write(outStream);
+					outStream.close();
+				}
+				
+			} catch (FileNotFoundException e) {
+				logger.warn("File not found: " + absPath);
+				continue;
+			} catch (IOException e) {
+				logger.warn("Error reading file: " + absPath);
+				continue;
+			}
+			
 		}
 	}
 
@@ -102,7 +182,7 @@ public class Utility {
 		String fileName     = file.getName();
 		int extensionIdx    = fileName.lastIndexOf(".xls");
 		String strippedName = fileName.substring(0, extensionIdx);
-		String mungedName   = strippedName + ".munged.xls";
+		String mungedName   = strippedName + fileSuffix + ".xls";
 		File mungedFile     = new File(parentFolder, mungedName);
 
 		return mungedFile;
