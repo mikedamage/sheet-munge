@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project SheetMunge with Jar-in-Jar Loader">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+        <jar destfile="/home/mike/workspace/SheetMunge/build/SheetMunge.jar">
+            <manifest>
+                <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
+                <attribute name="Rsrc-Main-Class" value="Tester"/>
+                <attribute name="Class-Path" value="."/>
+                <attribute name="Rsrc-Class-Path" value="./ log4j-1.2.jar commons-logging.jar poi-3.10.jar poi.jar xmlbeans.jar poi-ooxml-schemas.jar dom4j.jar poi-ooxml.jar poi-scratchpad.jar commons-io.jar"/>
+            </manifest>
+            <zipfileset src="jar-in-jar-loader.zip"/>
+            <fileset dir="/home/mike/workspace/SheetMunge/bin"/>
+            <zipfileset dir="/usr/share/java" includes="log4j-1.2.jar"/>
+            <zipfileset dir="/usr/share/java" includes="commons-logging.jar"/>
+            <zipfileset dir="/usr/share/java" includes="poi-3.10.jar"/>
+            <zipfileset dir="/usr/share/java" includes="poi.jar"/>
+            <zipfileset dir="/usr/share/java" includes="xmlbeans.jar"/>
+            <zipfileset dir="/usr/share/java" includes="poi-ooxml-schemas.jar"/>
+            <zipfileset dir="/usr/share/java" includes="dom4j.jar"/>
+            <zipfileset dir="/usr/share/java" includes="poi-ooxml.jar"/>
+            <zipfileset dir="/usr/share/java" includes="poi-scratchpad.jar"/>
+            <zipfileset dir="/usr/share/java" includes="commons-io.jar"/>
+        </jar>
+    </target>
+</project>
