@@ -21,9 +21,9 @@ import org.apache.commons.io.FileUtils;
 public class Utility {
 
 	private static final Logger logger = Logger.getLogger(Utility.class.getName());
-	private String[] rawArgs = null;
-	private Options options = new Options();
-	private String[] exts = { "xls" };
+	private String[] rawArgs           = null;
+	private Options options            = new Options();
+	private String[] exts              = { "xls" };
 	private File root;
 	private Iterator rootIterator;
 	
@@ -61,7 +61,8 @@ public class Utility {
 				Iterator fileIterator = FileUtils.iterateFiles(root, exts, true);
 				
 				while (fileIterator.hasNext()) {
-					logger.log(Level.INFO, ((File) fileIterator.next()).getAbsolutePath());
+					File currentFile = (File) fileIterator.next();
+					logger.info("Found spreadsheet: " + currentFile.getAbsolutePath());
 				}
 				
 				System.exit(0);
@@ -80,3 +81,4 @@ public class Utility {
 	}
 }
 
+// vim: set ts=4 sw=4 :
