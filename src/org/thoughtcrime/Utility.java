@@ -25,6 +25,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.ss.usermodel.Picture;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -79,6 +83,11 @@ public class Utility {
 				
 				File newPictureFile = new File(cmd.getOptionValue("i")).getAbsoluteFile();
 				
+				if (!isImagePng(newPictureFile)) {
+					logger.fatal("PNG images only! Come back with a PNG.");
+					System.exit(1);
+				}
+				
 				try {
 					FileInputStream newPictureIn = new FileInputStream(newPictureFile);
 					newPicture = IOUtils.toByteArray(newPictureIn);
@@ -117,6 +126,12 @@ public class Utility {
 		while (rootIterator.hasNext()) {
 			File currentFile     = (File) rootIterator.next();
 			String absPath       = currentFile.getAbsolutePath();
+			
+			if (absPath.indexOf(fileSuffix) != -1) {
+				logger.debug("Ignoring previously munged file: " + absPath);
+				continue;
+			}
+			
 			boolean readable     = currentFile.canRead();
 			File mungedFile      = makeMungedFile(currentFile);
 			String mungedPath    = mungedFile.getAbsolutePath();
@@ -159,6 +174,24 @@ public class Utility {
 					drawingPatriarch.removeShape(shape);
 				}
 				
+				logger.debug("Making creation helper");
+				CreationHelper helper = currentWorkbook.getCreationHelper();
+				
+				logger.debug("Actually adding image to workbook");
+				int pictureIdx        = currentWorkbook.addPicture(newPicture, Workbook.PICTURE_TYPE_PNG);
+				
+				logger.debug("Creating client anchor");
+				ClientAnchor anchor   = helper.createClientAnchor();
+				
+				anchor.setCol1(0);
+				anchor.setRow1(0);
+				
+				logger.debug("Creating Picture object");
+				Picture logo = drawingPatriarch.createPicture(anchor, pictureIdx);
+				
+				logger.debug("Resizing Picture to native dimensions");
+				logo.resize();
+				
 				if (!dryRun) {
 					FileOutputStream outStream = new FileOutputStream(mungedFile);
 					logger.info("Saving new workbook to " + mungedPath);
@@ -186,6 +219,14 @@ public class Utility {
 		File mungedFile     = new File(parentFolder, mungedName);
 
 		return mungedFile;
+	}
+	
+	private boolean isImagePng(File img) {
+		if (img.getName().indexOf(".png") == -1) {
+			return false;
+		}
+		
+		return true;
 	}
 }
 

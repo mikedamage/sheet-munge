@@ -8,7 +8,7 @@
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
                 <attribute name="Rsrc-Main-Class" value="org.thoughtcrime.SheetMunge"/>
                 <attribute name="Class-Path" value="."/>
-                <attribute name="Rsrc-Class-Path" value="./ log4j-1.2.jar commons-logging.jar poi-3.10.jar poi.jar xmlbeans.jar poi-ooxml-schemas.jar dom4j.jar poi-ooxml.jar poi-scratchpad.jar commons-io.jar commons-cli.jar"/>
+                <attribute name="Rsrc-Class-Path" value="./ log4j-1.2.jar commons-logging.jar poi-3.10.jar poi.jar xmlbeans.jar poi-ooxml-schemas.jar dom4j.jar poi-ooxml.jar poi-scratchpad.jar commons-io.jar commons-cli.jar ant-apache-log4j.jar commons-codec.jar"/>
             </manifest>
             <zipfileset src="jar-in-jar-loader.zip"/>
             <fileset dir="/home/mike/workspace/SheetMunge/bin"/>
@@ -23,6 +23,8 @@
             <zipfileset dir="/usr/share/java" includes="poi-scratchpad.jar"/>
             <zipfileset dir="/usr/share/java" includes="commons-io.jar"/>
             <zipfileset dir="/usr/share/java" includes="commons-cli.jar"/>
+            <zipfileset dir="/usr/share/java" includes="ant-apache-log4j.jar"/>
+            <zipfileset dir="/usr/share/java" includes="commons-codec.jar"/>
         </jar>
     </target>
 </project>
