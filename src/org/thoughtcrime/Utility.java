@@ -53,10 +53,7 @@ public class Utility {
 		options.addOption("n", "dry-run", false, "Just print which files would be processed");
 		options.addOption("d", "directory", true, "The directory to process");
 		options.addOption("i", "image", true, "The image to insert");
-		//options.addOption("x", "width", true, "Image width");
-		//options.addOption("y", "height", true, "Image height");
 		options.addOption("s", "suffix", true, "Updated filename suffix");
-		// image needs to be 70px tall
 	}
 
 	public void parse() {
@@ -183,8 +180,8 @@ public class Utility {
 				logger.debug("Creating client anchor");
 				ClientAnchor anchor   = helper.createClientAnchor();
 				
-				anchor.setCol1(0);
-				anchor.setRow1(0);
+				anchor.setCol1(1);
+				anchor.setRow1(1);
 				
 				logger.debug("Creating Picture object");
 				Picture logo = drawingPatriarch.createPicture(anchor, pictureIdx);
