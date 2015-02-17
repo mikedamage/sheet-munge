@@ -88,6 +88,7 @@ public class Utility {
 				try {
 					FileInputStream newPictureIn = new FileInputStream(newPictureFile);
 					newPicture = IOUtils.toByteArray(newPictureIn);
+					newPictureIn.close();
 				} catch (FileNotFoundException e) {
 					logger.fatal("New picture file not found!");
 					System.exit(1);
